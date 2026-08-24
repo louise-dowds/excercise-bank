@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercise Bank</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F5F3EF;
+  --surface: #FFFFFF;
+  --border: #E4E0D8;
+  --text: #1C1A17;
+  --text-2: #5C5850;
+  --text-3: #9C9890;
+
+  /* Category accent colours */
+  --core:      #2E4A7A;
+  --core-bg:   #EDF1F8;
+  --lower:     #7A4A00;
+  --lower-bg:  #F8F1E8;
+  --upper:     #7A2E2E;
+  --upper-bg:  #F8EDEE;
+  --back:      #2A5C3A;
+  --back-bg:   #EBF4EF;
+  --shoulder:  #4A2E7A;
+  --shoulder-bg:#F0EBFB;
+
+  --radius: 12px;
+  --pill-radius: 99px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── HEADER ─────────────────────────────────────────────────────────── */
+.header {
+  padding: 28px 20px 0;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: var(--text);
+  line-height: 1.1;
+}
+.header p {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-top: 5px;
+  font-weight: 400;
+}
+
+/* ── FILTER BAR ──────────────────────────────────────────────────────── */
+.filter-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  padding: 14px 20px 12px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.filter-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.pill {
+  padding: 6px 14px;
+  border-radius: var(--pill-radius);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.pill:hover { border-color: var(--text-3); }
+.pill.active-all       { background: var(--text);         color: #fff; border-color: var(--text); }
+.pill.active-core      { background: var(--core);          color: #fff; border-color: var(--core); }
+.pill.active-lower     { background: var(--lower);         color: #fff; border-color: var(--lower); }
+.pill.active-upper     { background: var(--upper);         color: #fff; border-color: var(--upper); }
+.pill.active-back      { background: var(--back);          color: #fff; border-color: var(--back); }
+.pill.active-shoulder  { background: var(--shoulder);      color: #fff; border-color: var(--shoulder); }
+
+/* ── COUNT ───────────────────────────────────────────────────────────── */
+.count-bar {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 20px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── EXERCISE LIST ───────────────────────────────────────────────────── */
+.list {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 20px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px 14px 20px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.12s, border-color 0.12s;
+}
+.card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+
+/* Left accent bar */
+.card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 4px;
+  border-radius: 12px 0 0 12px;
+}
+.card[data-cat="core"]::before     { background: var(--core); }
+.card[data-cat="lower"]::before    { background: var(--lower); }
+.card[data-cat="upper"]::before    { background: var(--upper); }
+.card[data-cat="back"]::before     { background: var(--back); }
+.card[data-cat="shoulder"]::before { background: var(--shoulder); }
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.1px;
+  flex: 1;
+}
+
+.cat-chip {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--pill-radius);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.cat-chip.core     { background: var(--core-bg);     color: var(--core); }
+.cat-chip.lower    { background: var(--lower-bg);    color: var(--lower); }
+.cat-chip.upper    { background: var(--upper-bg);    color: var(--upper); }
+.cat-chip.back     { background: var(--back-bg);     color: var(--back); }
+.cat-chip.shoulder { background: var(--shoulder-bg); color: var(--shoulder); }
+
+.card-desc {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.55;
+  margin-top: 6px;
+  display: none; /* collapsed by default */
+}
+.card.open .card-desc { display: block; }
+
+.toggle-btn {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  margin-top: 5px;
+  letter-spacing: 0.02em;
+}
+.card.open .toggle-btn { color: var(--text-3); }
+
+/* ── EMPTY STATE ─────────────────────────────────────────────────────── */
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-3);
+  font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Exercise bank</h1>
+  <p>Tap any exercise to expand. Equipment: small loop bands only.</p>
+</div>
+
+<div class="filter-wrap">
+  <div class="filter-bar" id="filters"></div>
+</div>
+
+<div class="count-bar" id="count-bar"></div>
+
+<div class="list" id="list"></div>
+
+<script>
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+// cat: core | lower | upper | back | shoulder
+// All exercises compatible with: small loop bands, yoga mat, no anchoring, no jumping.
+
+const EXERCISES = [
+
+  // ── CORE ──────────────────────────────────────────────────────────────────
+  { cat:'core', name:'Plank',
+    desc:'Forearms or hands on floor, body in a straight line from head to heels. Squeeze glutes and brace core. Don\'t let hips sag or pike. Hold as long as you can keep perfect form — stop the moment you start shaking.' },
+
+  { cat:'core', name:'Side plank',
+    desc:'Forearm on floor, body in a straight line sideways, hips stacked. Keep hips lifted and squeeze the obliques. Add hip dips — lower your hip to the floor and raise it back up — for a progression.' },
+
+  { cat:'core', name:'Dead bug',
+    desc:'Lie on back, arms pointing to the ceiling, knees bent at 90° in the air. Slowly lower opposite arm and leg toward the floor, keeping your lower back completely flat. Return and switch sides. Slow is everything here.' },
+
+  { cat:'core', name:'Hollow body hold',
+    desc:'Lie on back, press lower back hard into the floor, arms overhead, legs straight and raised. Hold the dish shape. Start with knees bent if needed. The goal is a body that could rock like a cradle — the press into the floor is the whole game.' },
+
+  { cat:'core', name:'Hollow body rock',
+    desc:'Same position as hollow body hold — then rock forward and back in small, controlled movements. No crashing, no losing the shape. This is a gymnastics foundation exercise and much harder than it looks.' },
+
+  { cat:'core', name:'Dish hold',
+    desc:'Arms by your sides or reaching forward, shoulders and legs both raised off the floor. Harder than hollow body because the arms give you less leverage. Hold until form breaks, then rest and repeat.' },
+
+  { cat:'core', name:'Dish rocks',
+    desc:'Get into dish hold, then rock slowly forward and back like a rocking chair, keeping the shape rigid. Any collapse at the hips or shoulders means the set is over.' },
+
+  { cat:'core', name:'Bicycle crunches',
+    desc:'Lie on back, hands loosely behind head. Lift shoulders off the floor and bring one elbow toward the opposite knee while extending the other leg low. Go deliberately slow — fast reps are just hip flexor work. The rotation is where the oblique engagement lives.' },
+
+  { cat:'core', name:'Heel taps',
+    desc:'Lie on back, knees bent, feet flat. Crunch slightly sideways to reach one hand down to the same-side heel, alternating. Keep your lower back flat throughout. Good for obliques without rotation strain.' },
+
+  { cat:'core', name:'Leg raises with hip lift',
+    desc:'Lie on back, raise straight legs to 90°. At the top, push your hips off the floor using your lower abs — a small but hard movement. Lower with control. Don\'t let momentum do the work.' },
+
+  { cat:'core', name:'Mountain climbers',
+    desc:'High plank position. Drive alternate knees to your chest in a controlled, deliberate rhythm. Slow reps make this a core exercise; fast reps make it cardio. For strength, stay slow and keep the hips level.' },
+
+  { cat:'core', name:'Plank shoulder taps',
+    desc:'High plank. Lift one hand, tap the opposite shoulder, return — then the other side. The challenge is keeping your hips completely still. Wider foot stance makes it easier; narrower makes it harder.' },
+
+  { cat:'core', name:'Bear crawl hold',
+    desc:'On hands and knees, lift your knees exactly 2 inches off the floor. Hold. Your shoulders and core work incredibly hard to maintain this. Progress by adding tiny forward-and-back shifts while keeping the knees low.' },
+
+  { cat:'core', name:'Dragon flag (tuck)',
+    desc:'Lie on back, grip something solid behind your head (sofa leg, door frame). Raise your whole body up onto your shoulders, keeping it rigid. Lower slowly. Tuck your knees to make it achievable — this is an advanced movement.' },
+
+  { cat:'core', name:'Seated leg lifts',
+    desc:'Sit on the floor, legs straight in front of you, hands lightly on the ground beside your hips. Raise both legs as high as you can, hold briefly, lower. Keep your back upright rather than letting it collapse back.' },
+
+  { cat:'core', name:'Inchworm',
+    desc:'Stand with feet hip-width. Hinge forward and walk your hands out to a plank. Pause there. Walk your feet back in to your hands. Stand. No jumping. A full-body movement that loads the core, shoulders and hamstrings in sequence.' },
+
+  { cat:'core', name:'Standing band side bend',
+    desc:'Stand on your loop band with one foot, hold the band taut at your side with the same-side hand. Resist as you lean away from it — the band pulls you back upright. Works the obliques under constant tension. Switch sides.' },
+
+  // ── LOWER BODY ────────────────────────────────────────────────────────────
+  { cat:'lower', name:'Glute bridge',
+    desc:'Lie on your back, knees bent, feet flat. Drive hips up by squeezing your glutes — not your lower back. Hold 2 seconds at the top before lowering. Add the loop band above your knees and push them out against it for more glute activation.' },
+
+  { cat:'lower', name:'Single-leg glute bridge',
+    desc:'Same as glute bridge but extend one leg straight. Drive through the grounded heel only. Keep hips level — one side will be obviously weaker and that\'s normal. Switch sides every rep or every set.' },
+
+  { cat:'lower', name:'Bridge march',
+    desc:'Hold the top position of a glute bridge and alternate lifting each foot off the floor. The goal is zero hip drop as you lift. This trains the glute to stabilise the pelvis, which matters a lot for running.' },
+
+  { cat:'lower', name:'Band squat',
+    desc:'Loop band just above your knees. Squat with feet shoulder-width and toes slightly turned out. The band tries to pull your knees in — actively push them out throughout the movement. This forces the glutes to fire. Sit back and down, chest up.' },
+
+  { cat:'lower', name:'Reverse lunge',
+    desc:'Step one foot back and lower your back knee toward the floor. Your front thigh should reach parallel. Drive back up through the front heel. Quieter on the knees than forward lunges, and easier on neighbours.' },
+
+  { cat:'lower', name:'Split squat',
+    desc:'Feet split apart front-to-back, back foot resting on the floor (or elevated on a low surface for more range). Lower your back knee straight down. The front leg does most of the work. A static version of a lunge that lets you focus on range and control.' },
+
+  { cat:'lower', name:'Donkey kicks',
+    desc:'On all fours, keep one knee bent at 90° and kick that heel toward the ceiling, squeezing the glute hard at the top. Loop band around both thighs for added resistance. Keep the lower back still — the hips should not rotate.' },
+
+  { cat:'lower', name:'Fire hydrants',
+    desc:'On all fours, lift one knee out to the side, keeping the knee bent. This is pure hip abductor work — the glute med, which stabilises the knee and pelvis during running. Loop band above the knees for more burn. Keep the core braced so you don\'t rock.' },
+
+  { cat:'lower', name:'Lateral band walk',
+    desc:'Loop band around your ankles or just above your knees. Get into a slight squat — a quarter squat is fine. Step sideways, maintaining the tension in the band on every step. Don\'t let your feet come together. Works the glute med hard.' },
+
+  { cat:'lower', name:'Standing band kick-backs',
+    desc:'Loop band around your ankles. Standing, kick one leg straight back, squeezing the glute at the end. Hold a wall for balance. Keep the movement slow and controlled — this is glute isolation, not a momentum exercise.' },
+
+  { cat:'lower', name:'Standing band side kicks',
+    desc:'Loop band around your ankles. Kick one leg out to the side, keeping it straight. Don\'t let your body tilt sideways to compensate. Works the hip abductors. Hold a wall and go slow.' },
+
+  { cat:'lower', name:'Calf raise',
+    desc:'Stand on a step edge or flat floor. Rise up onto your toes slowly, hold briefly at the top, lower slowly. Single-leg makes this significantly harder and exposes any imbalance. Calves are notoriously hard to fatigue — go for high reps or slow tempo.' },
+
+  { cat:'lower', name:'Band resisted squat',
+    desc:'Band just above the knees. At the bottom of each squat, pause and do 3 small pulses before standing. The pulses plus the constant outward drive against the band creates a serious glute burn without adding weight.' },
+
+  { cat:'lower', name:'Single-leg squat (assisted)',
+    desc:'Stand on one leg and hold a wall or chair frame lightly — just for balance, not support. Sit back on the single leg as far as you can while keeping your knee tracking over your foot. This is the foundation of the pistol squat.' },
+
+  { cat:'lower', name:'Hip circle',
+    desc:'Loop band just above the knees. On all fours, draw slow large circles with one knee — forward, out, back, in. Engages the hip in multiple planes. Reverse direction. Good as a warm-up or a finisher when everything else is fatigued.' },
+
+  { cat:'lower', name:'Squat hold (isometric)',
+    desc:'Lower into a squat and hold at parallel. That\'s it. The longer you hold, the more the quads and glutes are under tension. Add a loop band above the knees and push out throughout. Great when you want intensity without impact.' },
+
+  { cat:'lower', name:'Step-through lunge',
+    desc:'From standing, step back into a reverse lunge, return to standing, then step forward into a forward lunge on the same leg. One continuous controlled movement. Works the hip through a larger range than static lunges.' },
+
+  // ── UPPER BODY ────────────────────────────────────────────────────────────
+  { cat:'upper', name:'Push-up',
+    desc:'Hands slightly wider than shoulders, elbows at roughly 45°. Lower your chest to the floor, keeping a straight body line from head to heels. Knees down is a valid modification — it\'s not a lesser exercise, just a different one. Quality over rep count.' },
+
+  { cat:'upper', name:'Archer push-up',
+    desc:'Wide hand position. As you lower, shift your weight to one side — that arm bends, the other stays nearly straight. A step toward a one-arm push-up that\'s actually achievable. Excellent for chest and tricep strength asymmetry.' },
+
+  { cat:'upper', name:'Push-up to downdog',
+    desc:'Do a push-up, then at the top press your hips up and back into downward dog, stretching the back and shoulders. Flow between the two. This is a gymnastics carry-over movement — the downdog is active, not a rest.' },
+
+  { cat:'upper', name:'Diamond push-up',
+    desc:'Hands close together under your chest, forming a diamond shape. Much more tricep-dominant than a regular push-up. Harder than it looks. Keep your elbows from flaring wide.' },
+
+  { cat:'upper', name:'Tricep dip',
+    desc:'Hands on a chair or low surface behind you, fingers forward. Bend elbows to lower your body, keeping your back close to the chair. Legs straight makes it significantly harder. The tricep works through a long range here.' },
+
+  { cat:'upper', name:'Band tricep overhead extension',
+    desc:'Stand on the loop band with both feet close together. Grip the band behind your head with both hands. Extend arms straight overhead, keeping elbows close to your ears throughout. Lower slowly. A long-range tricep exercise.' },
+
+  { cat:'upper', name:'Band bicep curl',
+    desc:'Stand on the loop band with both feet. Hold the band at hip height, palms facing up. Curl both hands toward your shoulders slowly. Lower with control — the band has more tension at the top so the eccentric is challenging too.' },
+
+  { cat:'upper', name:'Band chest press (floor)',
+    desc:'Lie on your back, loop band across your chest held in both hands. Press your hands upward and slightly together as if bench pressing. The band has increasing resistance at the top of the movement. Slow and controlled.' },
+
+  { cat:'upper', name:'Band chest fly (floor)',
+    desc:'Lie on your back, loop band across your chest. Open arms wide toward the floor, then bring them back together above you — like a hug. Keep a slight bend in the elbow throughout. Stretches the chest at the bottom.' },
+
+  { cat:'upper', name:'Pike push-up',
+    desc:'Start in downward dog — hips high, hands and feet on the floor in a V shape. Lower the top of your head toward the floor by bending your elbows. Push back up. Elevate your feet on a chair to increase difficulty. This builds handstand pressing strength.' },
+
+  { cat:'upper', name:'Pike hold',
+    desc:'Feet elevated on a chair, hands on the floor directly below your hips. Hold the inverted V shape. This is static shoulder and core work — it builds the body position needed for handstands. Aim for 20–30 second holds.' },
+
+  { cat:'upper', name:'Tricep push-up',
+    desc:'Push-up with hands directly under your shoulders and elbows tracking back close to your ribs throughout. No elbow flare at all. Much harder than a standard push-up and very tricep-heavy.' },
+
+  { cat:'upper', name:'Band hammer curl',
+    desc:'Stand on the loop band, palms facing each other (neutral grip). Curl toward your shoulders. This hits the brachialis — the muscle under the bicep that adds thickness — more than a standard curl.' },
+
+  { cat:'upper', name:'Negative push-up',
+    desc:'Lower yourself as slowly as you possibly can — aim for 5–10 seconds. At the bottom, don\'t push back up — just reset from your knees. All the strength work is in the lowering phase. Excellent for building push-up strength when you can\'t do many full reps.' },
+
+  { cat:'upper', name:'Plank to push-up',
+    desc:'Start in a forearm plank. Push up onto one hand at a time to a high plank, then lower back to forearms one arm at a time. Alternate which arm leads. Keeps the core braced throughout while loading the triceps and shoulders.' },
+
+  // ── BACK ──────────────────────────────────────────────────────────────────
+  { cat:'back', name:'Arch lift (Superman)',
+    desc:'Lie face down, arms extended overhead. Simultaneously lift your arms, chest and legs off the floor. Hold 2–3 seconds at the top. This is spinal extensor work — the muscles that run either side of the spine. Under-trained in most people.' },
+
+  { cat:'back', name:'Arch lift with arms wide',
+    desc:'Same as Superman but arms out to the sides in a T or Y shape at the top. Different arm angles change which back muscles are emphasised. T-shape hits the mid-traps; Y-shape hits the lower traps.' },
+
+  { cat:'back', name:'Prone pull-apart',
+    desc:'Lie face down, arms extended in front. Lift into a Superman, then pull your arms back and apart behind you — like you\'re doing a backstroke. Hold at the widest point then return. Trains the rear deltoid and rhomboids together.' },
+
+  { cat:'back', name:'Band pull-apart',
+    desc:'Hold your loop band at shoulder height, one hand each side. Pull the band apart out to the sides until it touches your chest. Keep arms straight. Short range of motion with a small loop is fine — the tension is still real. This is excellent posture and shoulder health work.' },
+
+  { cat:'back', name:'Floor back extension hold',
+    desc:'Lie face down, hands behind your head. Lift your chest off the floor and hold. This is a lower-load version of the Superman — less range but more time under tension. Good for building endurance in the spinal erectors.' },
+
+  { cat:'back', name:'Superman pulses',
+    desc:'Hold the Superman position (lifted) and do small pulses — tiny raises and lowerings — without returning to the floor. Keeps the back muscles under constant tension. Much harder than it sounds after 10 seconds.' },
+
+  { cat:'back', name:'Reverse snow angel',
+    desc:'Lie face down, arms by your sides. Lift your arms and sweep them overhead and back in a wide arc — like a snow angel in reverse. Keep the chest slightly raised throughout. Works the entire posterior shoulder chain and upper back.' },
+
+  { cat:'back', name:'Bird dog',
+    desc:'On all fours, extend one arm forward and the opposite leg back simultaneously. Hold for 2–3 seconds. The challenge is keeping your hips completely level — no rotation, no sagging. A spine-safe back strengthener that also trains balance.' },
+
+  { cat:'back', name:'Band good morning',
+    desc:'Stand on the loop band with both feet, band across the back of your shoulders held with both hands. Hinge forward at the hips with a flat back, feeling the hamstrings load. Drive the hips forward to stand. This is a hip hinge pattern — essential for running and gymnastics.' },
+
+  { cat:'back', name:'Glute bridge hip hinge',
+    desc:'Stand with feet hip-width. Push your hips back as far as possible while keeping your back flat and chest tall — like you\'re closing a door with your hips. Feel the hamstrings load. Stand back up by driving the hips forward. The floor version of a deadlift movement.' },
+
+  { cat:'back', name:'Prone W',
+    desc:'Lie face down, lift into a Superman position. From there, pull your hands back to make a W shape with your arms — thumbs up, elbows bent, upper arms at 90° to your torso. This activates the mid and lower trapezius that supports healthy posture.' },
+
+  { cat:'back', name:'Prone T',
+    desc:'Lie face down, lift into a Superman position, then extend arms straight out to the sides in a T. Squeeze the shoulder blades together at the end range. Works the same muscles as a rear delt fly.' },
+
+  { cat:'back', name:'Prone Y',
+    desc:'Like the T but arms angle forward to make a Y shape overhead. Harder than the T because there\'s less leverage. The Y position activates the lower trapezius — important for shoulder stability and gymnastics.' },
+
+  { cat:'back', name:'Thoracic rotation (kneeling)',
+    desc:'Kneel on all fours. Place one hand behind your head. Rotate your elbow down toward the opposite hand then open it up toward the ceiling, following with your eyes. This mobilises the thoracic spine — the upper and mid back that gets stiff from sitting and hunching.' },
+
+  { cat:'back', name:'Cat-cow',
+    desc:'On all fours, alternate between arching your back up (cat — chin to chest, tailbone tucked) and letting it sag down (cow — chest forward, tailbone up). 10 slow reps. Both mobilises the spine and warms up the core and back extensors.' },
+
+  // ── SHOULDERS ─────────────────────────────────────────────────────────────
+  { cat:'shoulder', name:'Band pull-apart (shoulder height)',
+    desc:'Hold the loop band at shoulder height, one hand at each end. Pull the band apart until it touches your chest. Keep your arms straight and your shoulders down — don\'t shrug. Excellent for rear deltoid and rotator cuff health.' },
+
+  { cat:'shoulder', name:'Band pull-apart (overhead)',
+    desc:'Hold the loop band overhead, arms straight. Pull apart and lower behind your head, then return overhead. This is a shoulder dislocate with resistance — it develops shoulder mobility and rear chain strength simultaneously.' },
+
+  { cat:'shoulder', name:'Pike push-up',
+    desc:'Downward dog position. Lower the top of your head toward the floor by bending elbows. Push back up. Elevate feet to make harder. Primarily a shoulder press movement using your bodyweight. One of the most effective shoulder exercises with no equipment.' },
+
+  { cat:'shoulder', name:'Pike hold (static)',
+    desc:'Feet on a chair, hands on the floor beneath your hips. Hold the inverted V. Pure shoulder endurance and stability work — the kind that transfers directly to handstands and gymnastics. 20–30 second holds.' },
+
+  { cat:'shoulder', name:'Band external rotation',
+    desc:'Hold the loop band in both hands, elbows bent at 90° and tucked into your sides. Pull the band apart by rotating your forearms outward — like opening a book. Keep elbows glued to your sides. Trains the rotator cuff muscles that protect the shoulder joint.' },
+
+  { cat:'shoulder', name:'Band overhead press',
+    desc:'Stand on the loop band with both feet. Hold the band at shoulder height, palms forward. Press straight overhead until arms are extended. Lower slowly. The band gets harder as you reach the top — the opposite of free weights, which get easier.' },
+
+  { cat:'shoulder', name:'Band lateral raise',
+    desc:'Stand on the loop band, one foot, holding the other end at your side. Raise your arm out to the side to shoulder height. Lower slowly. Works the lateral deltoid — the muscle that gives shoulders their width. The band tension is highest at the top, making this a great shoulder finisher.' },
+
+  { cat:'shoulder', name:'Band front raise',
+    desc:'Stand on the loop band with both feet. Hold the band at thigh height, palms facing down. Raise both arms forward to shoulder height. Lower slowly. Works the front deltoid. Combined with lateral raises, you hit all three deltoid heads.' },
+
+  { cat:'shoulder', name:'Handstand wall hold',
+    desc:'Kick up against a wall in a handstand. Keep your body as hollow as possible — squeeze glutes, brace core, don\'t arch. Work up to 30-second holds. If you can\'t kick up yet, use a pike hold as your progression. This is the big gymnastics shoulder goal.' },
+
+  { cat:'shoulder', name:'Crow pose hold',
+    desc:'Squat down, place hands shoulder-width on the floor. Bend elbows and place knees on the back of your upper arms. Lean forward until your feet lift off. Hold. This is a gymnastic press skill that trains shoulder loading, wrist strength and core control simultaneously.' },
+
+  { cat:'shoulder', name:'Band W raise',
+    desc:'Stand on the loop band, hold both ends. Start with arms at your sides, then raise them into a W shape — elbows bent, upper arms roughly parallel to the floor, forearms pointing up. Squeeze the shoulder blades at the top. Trains rear deltoid and mid-trap.' },
+
+  { cat:'shoulder', name:'Prone shoulder tap (in push-up position)',
+    desc:'High plank. Tap one hand to the opposite shoulder and return. The shoulders work isometrically to stabilise the whole movement. Goes with plank shoulder taps under core too, but the shoulder loading here is the primary value.' },
+
+  { cat:'shoulder', name:'Wall walk',
+    desc:'Start in a plank with feet at a wall. Walk your feet up the wall and your hands toward the wall simultaneously, getting into a near-handstand position against the wall. Walk back down. Advanced. Trains every shoulder muscle through a huge range.' },
+
+  { cat:'shoulder', name:'Band pull-apart (low to high)',
+    desc:'Hold the loop band low — at hip height — and pull it apart while raising your arms to shoulder height simultaneously. Combines a raise with a pull-apart for a more complex movement that hits the lateral and rear deltoid together.' },
+
+  { cat:'shoulder', name:'Downdog hold',
+    desc:'In downward dog (hands and feet on the floor, hips high), hold and breathe. Push the floor away through the hands — don\'t let the shoulder blades collapse. A shoulder endurance hold that also stretches the hamstrings and calves. Good between harder sets.' },
+
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+const CATS = ['all','core','lower','upper','back','shoulder'];
+const CAT_LABELS = { all:'All', core:'Core', lower:'Lower body', upper:'Upper body', back:'Back', shoulder:'Shoulders' };
+let activeFilter = 'all';
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function renderFilters() {
+  document.getElementById('filters').innerHTML = CATS.map(c =>
+    `<button class="pill${activeFilter === c ? ' active-' + c : ''}" onclick="setFilter('${c}')">${CAT_LABELS[c]}</button>`
+  ).join('');
+}
+
+function setFilter(cat) {
+  activeFilter = cat;
+  renderFilters();
+  renderList();
+}
+
+function toggleCard(el) {
+  el.classList.toggle('open');
+  el.querySelector('.toggle-btn').textContent = el.classList.contains('open') ? 'Show less ↑' : 'How to do it ↓';
+}
+
+function renderList() {
+  const filtered = activeFilter === 'all' ? EXERCISES : EXERCISES.filter(e => e.cat === activeFilter);
+  const count = filtered.length;
+  document.getElementById('count-bar').textContent = `${count} exercise${count !== 1 ? 's' : ''}`;
+
+  if (!filtered.length) {
+    document.getElementById('list').innerHTML = '<div class="empty">No exercises found.</div>';
+    return;
+  }
+
+  document.getElementById('list').innerHTML = filtered.map((e, i) => `
+    <div class="card" data-cat="${e.cat}" onclick="toggleCard(this)">
+      <div class="card-header">
+        <span class="card-name">${e.name}</span>
+        <span class="cat-chip ${e.cat}">${CAT_LABELS[e.cat]}</span>
+      </div>
+      <div class="card-desc">${e.desc}</div>
+      <div class="toggle-btn">How to do it ↓</div>
+    </div>
+  `).join('');
+}
+
+// ─── BOOT ─────────────────────────────────────────────────────────────────────
+renderFilters();
+renderList();
+</script>
+</body>
+</html>
